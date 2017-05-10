@@ -1,6 +1,6 @@
 package no.fredrfli.http.exception;
 
-import no.fredrfli.http.HttpStatus;
+import no.fredrfli.http.util.HttpStatus;
 
 /**
  * @author: Fredrik F. Lindhagen <fred.lindh96@gmail.com>

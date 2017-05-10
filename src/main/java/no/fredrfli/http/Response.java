@@ -1,5 +1,9 @@
 package no.fredrfli.http;
 
+import no.fredrfli.http.util.HttpStatus;
+
+import static no.fredrfli.http.util.ContentTypesIdentifier.*;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,9 +43,15 @@ public class Response {
         return response.toString();
     }
 
-
     public Response setBody(String body) {
         this.body = body;
+
+        this.addHeader("Content-Length", this.body.getBytes().length);
+
+        // Set Content-Type if we recognize the type
+        if (isJson(this.body)) {
+            this.addHeader("Content-Type", "application/json");
+        }
 
         return this;
     }
@@ -50,6 +60,14 @@ public class Response {
         this.headers.put(key, value);
 
         return this;
+    }
+
+    public Response addHeader(String key, int value) {
+        return this.addHeader(key, Integer.toString(value));
+    }
+
+    public Response addHeader(String key, boolean value) {
+        return this.addHeader(key, Boolean.toString(value));
     }
 
     public Response setStatus(HttpStatus status) {

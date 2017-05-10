@@ -1,17 +1,16 @@
 package no.fredrfli.http.controller;
 
-import no.fredrfli.http.HttpStatus;
+import com.google.gson.Gson;
 import no.fredrfli.http.Request;
 import no.fredrfli.http.Response;
 import no.fredrfli.http.exception.MethodNotAllowedException;
-
-import java.util.Map;
 
 /**
  * @author: Fredrik F. Lindhagen <fred.lindh96@gmail.com>
  * @created: 09.05.2017
  */
 public class Controller implements Controllable {
+    protected Gson gson = new Gson();
 
     @Override
     public String get(Request req, Response res) {

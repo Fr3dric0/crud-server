@@ -13,7 +13,7 @@ import java.net.Socket;
  * @author: Fredrik F. Lindhagen <fred.lindh96@gmail.com>
  * @created: 07.05.2017
  */
-public class HttpRequestHandler implements Runnable {
+public class RequestHandler implements Runnable {
     private static final String CRLF = "\r\n";
 
     private Socket socket;
@@ -23,7 +23,7 @@ public class HttpRequestHandler implements Runnable {
     private OutputStream out;
     private BufferedReader br;
 
-    public HttpRequestHandler(Socket socket, Router router) throws IOException {
+    public RequestHandler(Socket socket, Router router) throws IOException {
         this.socket = socket;
         this.out = socket.getOutputStream();
         this.br = new BufferedReader(
@@ -62,7 +62,7 @@ public class HttpRequestHandler implements Runnable {
     }
 
     /**
-     * Sends the response back
+     * Sends a response back to the server
      *
      * @param res
      * */
@@ -97,23 +97,18 @@ public class HttpRequestHandler implements Runnable {
             case "GET":
                 body = ctrl.getWrapper(req, res);
                 break;
-
             case "POST":
                 body = ctrl.postWrapper(req, res);
                 break;
-
             case "PUT":
                 body = ctrl.putWrapper(req, res);
                 break;
-
             case "PATCH":
                 body = ctrl.patchWrapper(req, res);
                 break;
-
             case "DELETE":
                 body = ctrl.deleteWrapper(req, res);
                 break;
-
             default:
                 throw new MethodNotAllowedException();
         }
@@ -122,13 +117,24 @@ public class HttpRequestHandler implements Runnable {
         return res;
     }
 
+    /**
+     * Will read the http-request from the socket
+     * @return String Http-request
+     * */
     private String processRequest() {
-        String s;
         StringBuilder sb = new StringBuilder();
+        int contentLength = 0;
 
         try {
+            String s;
             while ((s = br.readLine()) != null) {
                 sb.append(s);
+
+                if (s.startsWith("Content-Length: ")) {
+                    int idx = s.indexOf(":") + 1;
+                    contentLength = Integer.parseInt(
+                            s.substring(idx).trim());
+                }
 
                 if (s.isEmpty()) {
                     break;
@@ -137,15 +143,43 @@ public class HttpRequestHandler implements Runnable {
                 sb.append(CRLF); // Give each header it's own line
             }
 
+            if (contentLength > 0) {
+                sb.append(CRLF);
+                sb.append(parseBody(br, contentLength));
+            }
         } catch (IOException ioe) {
             ioe.printStackTrace();
-
             return null;
         }
 
         return sb.toString();
     }
 
+    /**
+     * Extracts the body from the rest of the request
+     * @param br
+     * @param length
+     * @return String
+     * @throws IOException Thrown from br.read()
+     * */
+    private String parseBody(BufferedReader br, int length) throws IOException {
+        int read;
+        StringBuilder body = new StringBuilder();
+
+        while((read = br.read()) != -1) {
+            body.append((char) read);
+
+            if (body.length() >= length) {
+                break;
+            }
+        }
+
+        return body.toString();
+    }
+
+    /**
+     * Closes every stream
+     * */
     private void closeStreams() {
         try {
             out.close();

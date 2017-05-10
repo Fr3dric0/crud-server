@@ -1,3 +1,4 @@
+import model.HelloWorld;
 import no.fredrfli.http.Request;
 import no.fredrfli.http.Response;
 import no.fredrfli.http.controller.Controller;
@@ -8,9 +9,13 @@ import no.fredrfli.http.controller.Controller;
  */
 public class IndexController extends Controller {
 
+    @Override
     public String get(Request req, Response res) {
-        res.addHeader("Content-Type", "application/json");
+        //res.addHeader("Content-Type", "application/json");
 
-        return "{\"title\":\"Hello World\"}";
+        return gson.toJson(
+                new HelloWorld("Hello world", "YOLO"),
+                HelloWorld.class
+        );
     }
 }

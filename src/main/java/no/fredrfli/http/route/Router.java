@@ -35,31 +35,25 @@ public class Router {
      * url <- "/demographics/user"
      * find(url) -> DemoController
      *
-     * @param url
+     * @param req
      * @return Controller   The controller to run
      * */
-    public Controller find(String url) {
+    public Controller find(Request req) {
+        String url = req.getUri();
+
         url = (!url.startsWith("/") ? "/": "") + url;
 
         for (int i = 0 ; i < urls.size(); i++) {
             String u = urls.get(i);
 
-            // Return first closest matching url
+            // Find the first match
             if (url.startsWith(u)) {
+                req.setBaseUrl(u); // attach base-url to request
                 return controllers.get(i);
             }
         }
 
         return null;
-    }
-
-    /**
-     * Will be used to match urls with parameters
-     *
-     * */
-    public Controller find(Request req) {
-
-        return find(req.getUri());
     }
 
     /**

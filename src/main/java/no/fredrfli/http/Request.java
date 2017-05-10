@@ -1,8 +1,8 @@
 package no.fredrfli.http;
 
-import java.lang.reflect.Array;
+import static no.fredrfli.http.util.ContentTypesIdentifier.*;
+
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author: Fredrik F. Lindhagen <fred.lindh96@gmail.com>
@@ -15,6 +15,7 @@ public class Request {
     private String version;
     private String method;
     private String uri;
+    private String baseUrl;
 
     private String body;
     private Map<String, String> headers = new HashMap<>();
@@ -54,6 +55,16 @@ public class Request {
      * @param req
      * */
     private void decode(String req) {
+        Optional<String> body = Optional.ofNullable(extractBody(req));
+
+        // Save the body, and remove it from the request
+        if (body.isPresent()) {
+            String b = body.get();
+
+            setBody(b);
+            req = req.substring(0, req.indexOf(b));
+        }
+
         List<String> lines = new ArrayList<>(Arrays.asList(req.split(CRLF)));
 
         String reqLine = parseRequestLine(lines);
@@ -62,6 +73,46 @@ public class Request {
 
 
         this.headers = parseHeaders(lines);
+    }
+
+    /**
+     *
+     * @param body
+     * */
+    private void setBody(String body) {
+        MimeTypes contentType = findContentType(body);
+
+        if (!this.headers.containsKey("Content-Type")) {
+            this.headers.put("Content-Type", contentType.type);
+        }
+
+        this.body = body;
+    }
+
+    public void setBaseUrl(String baseUrl) { this.baseUrl = baseUrl; }
+
+    public String getBaseUrl() { return this.baseUrl; }
+
+    public MimeTypes getContentType() {
+        if (!this.headers.containsKey("Content-Type")) {
+            return null;
+        }
+
+        return MimeTypes.valueOf(this.headers.get("Content-Type"));
+    }
+    /**
+     * Will extract the body of the request
+     * @param req   The full http request
+     * @return String
+     * */
+    private String extractBody(String req) {
+        int bodyIdx = req.indexOf(CRLF+CRLF);
+
+        if (bodyIdx == -1 || req.length() + 1 <= bodyIdx) {
+            return null;
+        }
+
+        return req.substring(bodyIdx + 2).trim();
     }
 
 

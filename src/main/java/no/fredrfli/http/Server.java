@@ -33,7 +33,7 @@ public abstract class Server {
             Socket clientSocket = socket.accept();
 
             try {
-                HttpRequestHandler client = new HttpRequestHandler(clientSocket, router);
+                RequestHandler client = new RequestHandler(clientSocket, router);
 
                 Thread thread = new Thread(client);
                 thread.start();

@@ -1,13 +1,7 @@
-import no.fredrfli.http.HttpRequestHandler;
 import no.fredrfli.http.Server;
-import no.fredrfli.http.controller.Controller;
-import no.fredrfli.http.route.Router;
+import no.fredrfli.http.controller.StaticController;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.time.LocalDate;
-import java.util.*;
 
 /**
  * @author: Fredrik F. Lindhagen <fred.lindh96@gmail.com>
@@ -32,6 +26,7 @@ public class Main extends Server {
      *
      * */
     public void urls() {
-        router.register("/api", new Controller());
+        router.register("/api", new IndexController());
+        router.register("/static", new StaticController("/"));
     }
 }
