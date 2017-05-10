@@ -1,4 +1,5 @@
 import no.fredrfli.http.HttpRequestHandler;
+import no.fredrfli.http.Server;
 import no.fredrfli.http.controller.Controller;
 import no.fredrfli.http.route.Router;
 
@@ -12,33 +13,25 @@ import java.util.*;
  * @author: Fredrik F. Lindhagen <fred.lindh96@gmail.com>
  * @created: 07.05.2017
  */
-public class Main {
+public class Main extends Server {
 
-    private static Router router = new Router();
+    public static void main(String[] args) {
+        Main app = new Main();
+        app.port = 8080;
 
-
-    public static void main(String[] args) throws IOException {
-        int port = 8080;
-
-        router.register("/api", new Controller());
-
-        ServerSocket serverSocket = new ServerSocket(port);
-        System.out.println("Server running on port: " + port);
-
-        while (true) {
-            Socket clientSocket = serverSocket.accept();
-            System.out.println("Client connected");
-
-            try {
-                HttpRequestHandler client = new HttpRequestHandler(clientSocket, router);
-
-                Thread thread = new Thread(client);
-
-                thread.start();
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
-
+        try {
+            app.start();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
         }
+
+    }
+
+    /**
+     * Register urls here
+     *
+     * */
+    public void urls() {
+        router.register("/api", new Controller());
     }
 }

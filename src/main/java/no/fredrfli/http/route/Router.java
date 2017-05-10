@@ -1,5 +1,6 @@
 package no.fredrfli.http.route;
 
+import no.fredrfli.http.Request;
 import no.fredrfli.http.controller.Controller;
 
 import java.util.ArrayList;
@@ -50,6 +51,15 @@ public class Router {
         }
 
         return null;
+    }
+
+    /**
+     * Will be used to match urls with parameters
+     *
+     * */
+    public Controller find(Request req) {
+
+        return find(req.getUri());
     }
 
     /**

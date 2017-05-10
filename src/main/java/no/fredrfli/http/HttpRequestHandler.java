@@ -1,6 +1,9 @@
 package no.fredrfli.http;
 
 import no.fredrfli.http.controller.Controller;
+import no.fredrfli.http.exception.HttpException;
+import no.fredrfli.http.exception.MethodNotAllowedException;
+import no.fredrfli.http.exception.NotFoundException;
 import no.fredrfli.http.route.Router;
 
 import java.io.*;
@@ -17,14 +20,11 @@ public class HttpRequestHandler implements Runnable {
 
     private Router router;
 
-    private InputStream in;
     private OutputStream out;
-
     private BufferedReader br;
 
     public HttpRequestHandler(Socket socket, Router router) throws IOException {
         this.socket = socket;
-        this.in = socket.getInputStream();
         this.out = socket.getOutputStream();
         this.br = new BufferedReader(
                 new InputStreamReader(socket.getInputStream()));
@@ -37,32 +37,41 @@ public class HttpRequestHandler implements Runnable {
         Request req = new Request(processRequest());
         Response res = new Response();
 
-        Controller ctrl = router.find(req.getUri());
+        Controller ctrl = router.find(req);
 
-        if (ctrl == null) {
-            res.setStatus(HttpStatus.NOT_FOUND)
-                    .addHeader("Content-Type", "application/json")
-                    .setBody(String.format(
-                            "{\"error\": \"Cannot find %s %s\"}",
-                            req.getMethod(),
-                            req.getUri()));
-        } else {
-            // TODO - Waay to much try/catch blocks here..
-            try {
-                res = this.delegate(ctrl, req, res);
-            } catch (Exception e) {
-                // TODO - Replace with HttpException
-                e.printStackTrace();
+        try {
+            res = this.delegate(ctrl, req, res);
+
+        // Catches all HttpExceptions, which might have been thrown
+        // from the controllers
+        } catch (HttpException e) {
+            res.setStatus(e.getStatus());
+
+            if (e.getMessage() != null && e.getMessage().length() > 0) {
+                res.addHeader("Content-Type", "application/json");
+                res.setBody(e.getMessage());
+            } else {
+                res.setBody("");
             }
+
         }
 
+        send(res); // Respond to client
+
+        closeStreams(); // Close used streams
+    }
+
+    /**
+     * Sends the response back
+     *
+     * @param res
+     * */
+    private void send(Response res) {
         try {
             out.write(res.encode().getBytes());
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
-
-        closeStreams();
     }
 
     /**
@@ -74,7 +83,14 @@ public class HttpRequestHandler implements Runnable {
      * @param res
      * @return Response res
      */
-    private Response delegate(Controller ctrl, Request req, Response res) throws Exception {
+    private Response delegate(Controller ctrl, Request req, Response res) throws HttpException {
+        if (ctrl == null) {
+            throw new NotFoundException(
+                    String.format(
+                            "{\"error\": \"Cannot find %s %s\"}",
+                            req.getMethod(),
+                            req.getUri()));
+        }
 
         String body;
         switch (req.getMethod()) {
@@ -99,17 +115,10 @@ public class HttpRequestHandler implements Runnable {
                 break;
 
             default:
-                res.setStatus(HttpStatus.METHOD_NOT_ALLOWED)
-                        .addHeader("Content-Type", "application/json");
-
-                body = String.format(
-                        "{\"error\": \"Method '%s' on '%s' is not allowed\"}",
-                        req.getMethod(),
-                        req.getUri());
+                throw new MethodNotAllowedException();
         }
 
         res.setBody(body);
-
         return res;
     }
 
