@@ -1,80 +1,71 @@
 package no.fredrfli.http.db;
 
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.ParameterExpression;
-import javax.persistence.criteria.Root;
-import java.util.List;
-import java.util.Objects;
+import java.sql.*;
+import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * @author: Fredrik F. Lindhagen <fred.lindh96@gmail.com>
  * @created: 11.05.2017
  */
 public class BaseDao<T> {
-    private SessionFactory sessionFactory;
+    public static Properties connectionProps;
     private Class<T> type;
+    private String table;
 
-    public BaseDao(SessionFactory sessionFactory, Class<T> type) {
-        Objects.requireNonNull(
-                sessionFactory,
-                "Requires a SessionFactory to connect to a database");
+    public BaseDao(String table, Class<T> type) {
         Objects.requireNonNull(
                 type,
                 "Requires the model-type, to handle database queries");
-        this.sessionFactory = sessionFactory;
+        checkDatabaseConnection(); // Ensure connectionProps exists
+
+        this.table = table;
         this.type = type;
     }
 
-    public List<T> find() {
-//        Session session = sessionFactory.openSession();
-//
-//        CriteriaBuilder builder = session.getCriteriaBuilder();
-//        CriteriaQuery<T> criteria = builder.createQuery(type);
-//        Root<T> rootEntry = criteria.from(type);
-//
-//        CriteriaQuery<T> all = criteria.select(rootEntry);
-//
-//        TypedQuery<T> allQuery = session.createQuery(all);
-//        List<T> hw = allQuery.getResultList();
-//
-//        session.close();
+    public boolean saveQuery(Supplier<String> supplier) {
+        try (Connection c =
+                     DriverManager.getConnection(
+                             connectionProps.get("url").toString(),
+                             connectionProps)) {
 
-        List<T> matches = findWhere((cb, root) -> (t) -> true);
+            Statement s = c.createStatement();
 
-        return matches;
+            s.executeUpdate(supplier.get());
+        } catch (SQLException sqle) {
+            // Ignore
+            return false;
+        }
+
+        return true;
     }
 
     /**
-     * Warning: Because of hibernates setup, this
-     * is a hard to read method.
      *
-     * In essence,
      *
      * */
-    public List<T> findWhere(PredicateBuilder<T> pb) {
-        Session session = sessionFactory.openSession();
+    public ResultSet findQuery(Supplier<String> supplier) {
+        try (Connection c =
+                     DriverManager.getConnection(
+                             connectionProps.get("url").toString(),
+                             connectionProps)) {
 
-        CriteriaBuilder builder = session.getCriteriaBuilder();
-        CriteriaQuery<T> query = builder.createQuery(type);
+            Statement s = c.createStatement();
 
-        Root<T> rootEntry = query.from(type);
+            return s.executeQuery(supplier.get());
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+            return null;
+        }
+    }
 
-        CriteriaQuery<T> criteriaQuery = query.select(rootEntry);
-        ParameterExpression<Integer> p = builder.parameter(Integer.class);
-
-        criteriaQuery.where(
-                builder.equal(rootEntry.get("title"), p)
+    public List<T> find() {
+        ResultSet match = findQuery(
+                () -> String.format("SELECT * FROM %s", table)
         );
 
-        TypedQuery<T> typedQuery = session.createQuery(criteriaQuery);
 
-        return typedQuery.getResultList();
+        return null;
     }
 
     public T findById(long id) {
@@ -83,17 +74,6 @@ public class BaseDao<T> {
     }
 
     public T create(T obj) {
-        Session session = sessionFactory.openSession();
-
-        // Begin a transaction
-        session.beginTransaction();
-
-        session.save(obj);
-
-        session.getTransaction().commit();
-
-        session.close();
-
         return obj;
     }
 
@@ -107,5 +87,14 @@ public class BaseDao<T> {
         return obj;
     }
 
+
+    private void checkDatabaseConnection() throws IllegalStateException {
+        if (connectionProps == null) {
+            throw new IllegalStateException(
+                    "Missing required database properties");
+        }
+
+        // Validate the necessary keys exists
+    }
 
 }

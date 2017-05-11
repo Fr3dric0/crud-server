@@ -23,6 +23,10 @@ public class Model {
     public long getId() { return id; }
     public long getVersion() { return version; }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
     @Override
     public String toString() {
         return toJson();

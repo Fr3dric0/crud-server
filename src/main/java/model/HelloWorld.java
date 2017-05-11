@@ -1,10 +1,17 @@
 package model;
 
+import jdk.nashorn.internal.ir.annotations.Ignore;
+import no.fredrfli.http.db.BaseDao;
 import no.fredrfli.http.model.Model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -12,8 +19,11 @@ import java.util.Objects;
  * @created: 10.05.2017
  */
 @Entity
-@Table(name = "HelloWorld")
 public class HelloWorld extends Model {
+
+    @Transient
+    private static BaseDao<HelloWorld> repo =
+            new BaseDao<>("helloworld", HelloWorld.class);
 
     @Column(name = "`title`")
     private String title;
@@ -23,11 +33,6 @@ public class HelloWorld extends Model {
 
     public HelloWorld() {}
 
-    public HelloWorld(HelloWorldBuilder builder) {
-        this.title = builder.title;
-        this.description = builder.description;
-    }
-
     public HelloWorld(String title, String description) {
         Objects.requireNonNull(title);
         Objects.requireNonNull(description);
@@ -36,8 +41,22 @@ public class HelloWorld extends Model {
         this.description = description;
     }
 
+    public static List<HelloWorld> find() {
+        return mapToMultiple(repo.findQuery(
+                () -> "SELECT * FROM helloworld"));
+    }
+
+
     public HelloWorld fromJson(String json) {
         return (HelloWorld) super.fromJson(json);
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getTitle() {
@@ -48,21 +67,33 @@ public class HelloWorld extends Model {
         return description;
     }
 
-    public static class HelloWorldBuilder {
-        private String title;
-        private String description;
+    private static List<HelloWorld> mapToMultiple(ResultSet rs) {
+        List<HelloWorld> items = new ArrayList<>();
 
-        public HelloWorldBuilder(String title) {
-            this.title = title;
+        try {
+            while(rs.next()) {
+                items.add(mapToSingle(rs));
+            }
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+            // Ignore
         }
 
-        public HelloWorldBuilder withDescription(String description) {
-            this.description = description;
-            return this;
+        return items;
+    }
+
+    private static HelloWorld mapToSingle(ResultSet rs) {
+        HelloWorld h = new HelloWorld();
+
+        try {
+            h.setId((long) rs.getInt("id"));
+            h.setTitle(rs.getString("title"));
+            h.setDescription(rs.getString("description"));
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+            return null;
         }
 
-        public HelloWorld build() {
-            return new HelloWorld(this);
-        }
+        return h;
     }
 }

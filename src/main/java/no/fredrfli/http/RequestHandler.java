@@ -8,6 +8,7 @@ import no.fredrfli.http.route.Router;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Date;
 
 /**
  * @author: Fredrik F. Lindhagen <fred.lindh96@gmail.com>
@@ -23,13 +24,19 @@ public class RequestHandler implements Runnable {
     private OutputStream out;
     private BufferedReader br;
 
-    public RequestHandler(Socket socket, Router router) throws IOException {
+    private boolean logging = true;
+    private Date startTime;
+
+    public RequestHandler(Socket socket, Router router, boolean logging) throws IOException {
+        startTime = new Date();
+
         this.socket = socket;
         this.out = socket.getOutputStream();
         this.br = new BufferedReader(
                 new InputStreamReader(socket.getInputStream()));
 
         this.router = router;
+        this.logging = logging;
     }
 
     /**
@@ -53,14 +60,16 @@ public class RequestHandler implements Runnable {
 
             if (e.getMessage() != null && e.getMessage().length() > 0) {
                 res.addHeader("Content-Type", "application/json");
-                res.setBody(e.getMessage());
+                res.setBody(String.format(
+                        "{\"error\": \"%s\"}",
+                        e.getMessage()));
             } else {
                 res.setBody("");
             }
 
         }
 
-        send(res); // Respond to client
+        send(req, res); // Respond to client
 
         closeStreams(); // Close used streams
     }
@@ -68,14 +77,41 @@ public class RequestHandler implements Runnable {
     /**
      * Sends a response back to the server
      *
+     * @param req Used for loggging
      * @param res
      * */
-    private void send(Response res) {
+    private void send(Request req, Response res) {
         try {
             out.write(res.encode().getBytes());
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
+
+        if (logging) {
+            logg(req, res);
+        }
+    }
+
+    private void logg(Request req, Response res) {
+        // Process time
+        long timeTaken = new Date().getTime() - startTime.getTime();
+
+        String template = "%s - %s %s [%sms] %s%n";
+
+        PrintStream out;
+        if (res.getStatus().getCode() >= 400) {
+            out = System.err;
+        } else {
+            out = System.out;
+        }
+
+        out.printf(template,
+                startTime,
+                req.getMethod(),
+                req.getUri(),
+                timeTaken,
+                res.getStatus().getCode()
+        );
     }
 
     /**

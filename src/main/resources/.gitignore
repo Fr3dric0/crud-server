@@ -1,5 +1,7 @@
 
-app.properties
+database.properties
 hibernate.properties
 
 hibernate.cfg.xml
+
+static/*

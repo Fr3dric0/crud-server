@@ -7,18 +7,38 @@ import java.util.Arrays;
  * @created: 10.05.2017
  */
 public enum MimeTypes {
-    APPLICATION_JSON("application/json"),
-    HTML("text/html"),
-    JPEG("image/jpeg"),
-    GIF("image/gif"),
-    PLAIN("text/plain"),
-    XML("application/xml"),
-    OCTET_STREAM("application/octet-stream");
+    APPLICATION_JSON("application/json", "json"),
+    HTML("text/html", "html"),
+    JPEG("image/jpeg", "jpg", "jpeg"),
+    GIF("image/gif", "git"),
+    PLAIN("text/plain", "txt"),
+    XML("application/xml", "xml"),
+    MARKDOWN("text/markdown; charset=UTF-8", "md"),
+    OCTET_STREAM("application/octet-stream", null);
 
     public final String type;
+    public final String[] endings;
 
-    MimeTypes(String type) {
+    MimeTypes(String type, String... endings) {
         this.type = type;
+        this.endings = endings;
+    }
+
+    public static MimeTypes matchEnding(String path) {
+        return Arrays.asList(MimeTypes.values())
+                .stream()
+                .filter(t -> {
+
+                    for (String ending : t.endings) {
+                        if (path.endsWith(ending)) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                })
+                .findFirst()
+                .orElseGet(() -> null);
     }
 
     public MimeTypes findType(String type) {

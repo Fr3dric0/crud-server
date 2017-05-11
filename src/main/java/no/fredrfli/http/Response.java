@@ -76,6 +76,14 @@ public class Response {
         return this;
     }
 
+    public HttpStatus getStatus() { return status; }
+
+    public Map<String, String> getHeaders() { return headers; }
+
+    public String getBody() { return body; }
+
+    public String getVersion() { return version; }
+
     private String joinHeaders() {
         StringBuilder headers = new StringBuilder();
 
