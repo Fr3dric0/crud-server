@@ -2,7 +2,7 @@ package no.fredrfli.http;
 
 import no.fredrfli.http.util.HttpStatus;
 
-import static no.fredrfli.http.util.ContentTypesIdentifier.*;
+import static no.fredrfli.http.util.MimeTypeIdentifier.*;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -32,6 +32,10 @@ public class RequestHandler implements Runnable {
         this.router = router;
     }
 
+    /**
+     * Handles the request
+     *
+     * */
     @Override
     public void run() {
         Request req = new Request(processRequest());

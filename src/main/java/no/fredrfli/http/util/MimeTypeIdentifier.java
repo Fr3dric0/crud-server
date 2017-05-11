@@ -2,16 +2,14 @@ package no.fredrfli.http.util;
 
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import no.fredrfli.http.MimeTypes;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * @author: Fredrik F. Lindhagen <fred.lindh96@gmail.com>
  * @created: 10.05.2017
  */
-public class ContentTypesIdentifier {
+public class MimeTypeIdentifier {
     private static final String HTML_PATTERN = "<(\"[^\"]*\"|'[^']*'|[^'\">])*>";
     private static Pattern pattern = Pattern.compile(HTML_PATTERN);
 

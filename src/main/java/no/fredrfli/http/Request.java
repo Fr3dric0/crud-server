@@ -1,6 +1,8 @@
 package no.fredrfli.http;
 
-import static no.fredrfli.http.util.ContentTypesIdentifier.*;
+import no.fredrfli.http.util.MimeTypes;
+
+import static no.fredrfli.http.util.MimeTypeIdentifier.*;
 
 import java.util.*;
 

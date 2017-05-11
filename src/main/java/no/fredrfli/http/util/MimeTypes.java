@@ -1,4 +1,4 @@
-package no.fredrfli.http;
+package no.fredrfli.http.util;
 
 import java.util.Arrays;
 
