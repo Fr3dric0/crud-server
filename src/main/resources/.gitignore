@@ -1,6 +1,7 @@
 
 database.properties
 hibernate.properties
+server.properties
 
 hibernate.cfg.xml
 

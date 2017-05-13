@@ -1,5 +1,7 @@
 package no.fredrfli.http.util;
 
+import no.fredrfli.http.exception.HttpException;
+
 import java.util.Arrays;
 
 /**
@@ -24,21 +26,44 @@ public enum MimeTypes {
         this.endings = endings;
     }
 
+    /**
+     * Finds the first matching MIME-type,
+     * for the filepath
+     *
+     * @param path
+     * @return MimeTypes
+     * */
     public static MimeTypes matchEnding(String path) {
-        return Arrays.asList(MimeTypes.values())
-                .stream()
-                .filter(t -> {
+        if (path == null) {
+            return null;
+        }
 
-                    for (String ending : t.endings) {
-                        if (path.endsWith(ending)) {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                })
+        return Arrays.stream(MimeTypes.values())
+                .filter(t -> endsWith(t, path))
                 .findFirst()
-                .orElseGet(() -> null);
+                .orElse(null);
+    }
+
+    /**
+     * Helper method for matchEnding.
+     * Will check if the path ends with the mimetype
+     * @param mime
+     * @param path
+     * @return boolean
+     * */
+    private static boolean endsWith(MimeTypes mime, String path) {
+        // If no ending exists on type, it matches everything.
+        if (mime.endings == null) {
+            return true;
+        }
+
+        for (String ending : mime.endings) {
+            if (path.endsWith(ending)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public MimeTypes findType(String type) {

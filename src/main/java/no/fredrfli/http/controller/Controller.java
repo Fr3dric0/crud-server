@@ -1,9 +1,16 @@
 package no.fredrfli.http.controller;
 
 import com.google.gson.Gson;
+import no.fredrfli.http.Configuration;
 import no.fredrfli.http.Request;
 import no.fredrfli.http.Response;
 import no.fredrfli.http.exception.MethodNotAllowedException;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.Scanner;
 
 /**
  * @author: Fredrik F. Lindhagen <fred.lindh96@gmail.com>
@@ -107,4 +114,30 @@ public class Controller implements Controllable {
         return this.patch(req, res);
     }
 
+
+    /**
+     * Will load the file and return it as a `string`.
+     * Should the file not exist, will it return `null`.
+     *
+     * @param path
+     * @return String
+     * @throws IOException Thrown if a non-natural exception happens,
+     *                     FileNotFoundExceptions will return `null`.
+     * */
+    protected static Optional<String> readFile(String path) throws IOException {
+        StringBuilder sb = new StringBuilder();
+
+        try (Scanner sc = new Scanner(new File(path))) {
+
+            while (sc.hasNextLine()) {
+                sb.append(sc.nextLine());
+                sb.append("\n"); // Keep the new-lines
+            }
+
+        } catch (FileNotFoundException fnfe) {
+            return Optional.empty();
+        }
+
+        return Optional.of(sb.toString());
+    }
 }

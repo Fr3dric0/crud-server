@@ -1,3 +1,5 @@
+package controller;
+
 import model.HelloWorld;
 import no.fredrfli.http.Request;
 import no.fredrfli.http.Response;

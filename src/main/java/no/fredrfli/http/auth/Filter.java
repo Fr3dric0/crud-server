@@ -1,0 +1,13 @@
+package no.fredrfli.http.auth;
+
+import no.fredrfli.http.Request;
+import no.fredrfli.http.Response;
+
+/**
+ * @author: Fredrik F. Lindhagen <fred.lindh96@gmail.com>
+ * @created: 13.05.2017
+ */
+public interface Filter {
+
+    boolean canActivate(Request req, Response res);
+}

@@ -1,3 +1,6 @@
+import controller.ProtectedController;
+import controller.TokenController;
+import no.fredrfli.http.Configuration;
 import no.fredrfli.http.Server;
 import no.fredrfli.http.controller.StaticController;
 import no.fredrfli.http.route.Router;
@@ -11,11 +14,15 @@ import java.io.*;
 public class Main extends Server {
 
     public static void main(String[] args) throws ClassNotFoundException {
-        // Setup necessary configurations
-        setup(Main.class.getResource("/database.properties"));
+        // Server setup (required)
+        // After setup, we can access configuration values through
+        // Configuration.getProperties()
+        setup(Main.class.getResource("/server.properties"));
+
+        // Database setup (optional)
+        //setupDb(Main.class.getResource("/database.properties"));
 
         Main app = new Main();
-        app.port = 8080;
 
         try {
             app.start();
@@ -31,9 +38,22 @@ public class Main extends Server {
      * */
     @Override
     public void urls(Router router) {
-        router.register("/api", new IndexController());
-        router.register("/static", new StaticController(
-                this.getClass().getResource("/static").getPath())
-        );
+        // Dynamic routes
+        router.register("/api", new ProtectedController());
+        router.register("/user/token", new TokenController());
+
+    }
+
+    /**
+     *
+     * */
+    private String getStaticRoot() {
+        if (!Configuration.getProperties().containsKey("static.root")) {
+            return null;
+        }
+
+        String root = (String) Configuration.getProperties().get("static.root");
+
+        return this.getClass().getResource(root).getPath();
     }
 }
