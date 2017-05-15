@@ -1,14 +1,13 @@
 package no.fredrfli.http.auth;
 
 
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
 import no.fredrfli.http.Request;
 import no.fredrfli.http.Response;
 import no.fredrfli.http.exception.ForbiddenException;
 import no.fredrfli.http.exception.UnauthorizedException;
 
-import java.security.Key;
 import java.util.Objects;
 
 /**
@@ -18,18 +17,22 @@ import java.util.Objects;
  * Filter to validate a Json Web Token (JWT).
  * Expected format is
  */
-public class JWTFilter implements Filter {
+public class JWTFilter extends Filter {
     private String secret;
     private String prefix = "bearer";
     private JWT jwt;
 
-    public JWTFilter(String secret) {
-        Objects.requireNonNull(
-                secret,
-                "Missing token-secret");
+    public JWTFilter(String secret, int priority) {
+        Objects.requireNonNull(secret,"Missing token-secret");
+
+        this.priority = priority;
 
         this.secret = secret;
         jwt = new JWT(this.secret);
+    }
+
+    public JWTFilter(String secret) {
+        this(secret, 0);
     }
 
     /**
@@ -80,6 +83,8 @@ public class JWTFilter implements Filter {
             jwt.verify(token);
         } catch(SignatureException se) {
             throw new ForbiddenException("Invalid token");
+        } catch (ExpiredJwtException ie) {
+            throw new ForbiddenException("Expired token");
         }
     }
 

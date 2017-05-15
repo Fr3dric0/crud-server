@@ -1,8 +1,8 @@
+import controller.IndexController;
 import controller.ProtectedController;
 import controller.TokenController;
 import no.fredrfli.http.Configuration;
 import no.fredrfli.http.Server;
-import no.fredrfli.http.controller.StaticController;
 import no.fredrfli.http.route.Router;
 
 import java.io.*;
@@ -39,7 +39,9 @@ public class Main extends Server {
     @Override
     public void urls(Router router) {
         // Dynamic routes
-        router.register("/api", new ProtectedController());
+        router.register("/api", new IndexController());
+        router.register("/secure", new ProtectedController()
+                .ignoreMethods("POST"));
         router.register("/user/token", new TokenController());
 
     }

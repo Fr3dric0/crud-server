@@ -12,4 +12,8 @@ public class ForbiddenException extends HttpException {
         super(msg);
         status = HttpStatus.FORBIDDEN;
     }
+
+    public ForbiddenException() {
+        this(HttpStatus.FORBIDDEN.getStatus());
+    }
 }

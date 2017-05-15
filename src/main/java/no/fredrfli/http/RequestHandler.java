@@ -115,8 +115,8 @@ public class RequestHandler implements Runnable {
     }
 
     /**
-     * Responsible for calling the correct method
-     * ont the controller
+     * Responsible for calling the correct methods
+     * on the controller
      *
      * @param ctrl
      * @param req
@@ -127,7 +127,7 @@ public class RequestHandler implements Runnable {
         if (ctrl == null) {
             throw new NotFoundException(
                     String.format(
-                            "{\"error\": \"Cannot find %s %s\"}",
+                            "Cannot find %s %s",
                             req.getMethod(),
                             req.getUri()));
         }

@@ -10,11 +10,11 @@ import java.util.stream.Collectors;
  */
 public enum HttpStatus {
     OK(200, "200 OK"),
-    CREATED(200, "201 CREATED"),
-    NO_CONTENT(204, "204 NO CONTENT"),
-    UNAUTHORIZED(401, "401 UNAUTHORIZED"),
-    FORBIDDEN(403, "403 FORBIDDEN"),
-    NOT_FOUND(404, "404 NOT FOUND"),
+    CREATED(200, "201 Created"),
+    NO_CONTENT(204, "204 No Content"),
+    UNAUTHORIZED(401, "401 Unauthorized"),
+    FORBIDDEN(403, "403 Forbidden"),
+    NOT_FOUND(404, "404 Not Found"),
     METHOD_NOT_ALLOWED(405, "405 Method Not Allowed"),
     INTERNAL_SERVER_ERROR(500, "500 Internal Server Error");
 
