@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * @author: Fredrik F. Lindhagen <fred.lindh96@gmail.com>
  * @created: 13.05.2017
  */
-public class AuthController extends Controller {
+public abstract class AuthController extends Controller {
 
     protected List<Filterable> filters = new ArrayList<>();
     protected Set<String> ignore = new HashSet<>();

@@ -9,7 +9,7 @@ import no.fredrfli.http.auth.JWTFilter;
  *
  * Ready-to-go controller which provides Json Web Token authentication.
  */
-public class JWTAuthController extends AuthController {
+public abstract class JWTAuthController extends AuthController {
 
     public JWTAuthController () {
         super();
