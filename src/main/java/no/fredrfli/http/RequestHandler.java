@@ -45,13 +45,13 @@ public class RequestHandler implements Runnable {
      * */
     @Override
     public void run() {
-        Request req = new Request(processRequest());
+        Request req = new Request(parseRequest());
         Response res = new Response();
 
         Controller ctrl = router.find(req);
 
         try {
-            res = this.delegate(ctrl, req, res);
+            res = this.delegateRequest(ctrl, req, res);
 
         // Catches all HttpExceptions, which might have been thrown
         // from the controllers
@@ -88,11 +88,11 @@ public class RequestHandler implements Runnable {
         }
 
         if (logging) {
-            logg(req, res);
+            log(req, res);
         }
     }
 
-    private void logg(Request req, Response res) {
+    private void log(Request req, Response res) {
         // Process time
         long timeTaken = new Date().getTime() - startTime.getTime();
 
@@ -123,7 +123,7 @@ public class RequestHandler implements Runnable {
      * @param res
      * @return Response res
      */
-    private Response delegate(Controller ctrl, Request req, Response res) throws HttpException {
+    private Response delegateRequest(Controller ctrl, Request req, Response res) throws HttpException {
         if (ctrl == null) {
             throw new NotFoundException(
                     String.format(
@@ -161,7 +161,7 @@ public class RequestHandler implements Runnable {
      * Will read the http-request from the socket
      * @return String Http-request
      * */
-    private String processRequest() {
+    private String parseRequest() {
         StringBuilder sb = new StringBuilder();
         int contentLength = 0;
 
@@ -170,6 +170,7 @@ public class RequestHandler implements Runnable {
             while ((s = br.readLine()) != null) {
                 sb.append(s);
 
+                // Identifies if the request contains a body
                 if (s.startsWith("Content-Length: ")) {
                     int idx = s.indexOf(":") + 1;
                     contentLength = Integer.parseInt(
@@ -180,9 +181,10 @@ public class RequestHandler implements Runnable {
                     break;
                 }
 
-                sb.append(CRLF); // Give each header it's own line
+                sb.append(CRLF); // Preserve the header line-breaks
             }
 
+            // Extract the request-body
             if (contentLength > 0) {
                 sb.append(CRLF);
                 sb.append(parseBody(br, contentLength));

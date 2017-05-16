@@ -16,6 +16,7 @@ public class ProtectedController extends JWTAuthController {
 
     @Override
     public String get(Request req, Response res) {
+
         return "Hello world";
     }
 }
